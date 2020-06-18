@@ -1,0 +1,27 @@
+name: nsjail-toolchain-amd64
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: submodule checkout
+      run: |
+        git submodule sync --recursive
+        git submodule update --init --force --recursive --depth=1
+    - name: install autopoint
+      run: sudo apt update && sudo apt install autopoint libelf-dev cpio
+    - name: configure
+      run: ./build.sh amd64_defconfig
+    - name: make
+      run: ./build.sh sdk -j3
+    - name: Archive toolchain
+      uses: actions/upload-artifact@v1
+      with:
+        name: amd64-toolchain
+        path: output/images/x86_64-buildroot-linux-gnu_sdk-buildroot.tar.gz
